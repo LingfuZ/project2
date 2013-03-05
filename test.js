@@ -1,10 +1,13 @@
 var http = require('http');
 var fs = require('fs');
-
+var portnumber = 9020;
+//TODO: support up to 20 connections
+http.globalAgent.maxSockets = 20;
 http.createServer(function (req, res) {
-// regax match 
+// regax match /Chat and parse the chatname and line
+// save the chat message to the buffer
   // set up some routes
-  switch(req.url) {
+  switch(req.url) { 
     case '/':
          //show welcome screen
           console.log("[200] " + req.method + " to " + req.url);
@@ -63,5 +66,13 @@ http.createServer(function (req, res) {
       res.end('<html><head><title>404 - Not found</title></head><body><h1>Not found.</h1></body></html>');
       console.log("[404] " + req.method + " to " + req.url);
   };
-}).listen(8001)
-console.log("Server is running at port 8001");
+
+  // Remove users from list when they disconnect
+  // req.on("close", function(err) {
+  //   console.log("Connection closed unexpectedly");
+  // });
+  // req.on("end", function(err) {
+  //   console.log("Connection closed");
+  // });
+}).listen(portnumber)
+console.log("Server is running at port " + portnumber);
