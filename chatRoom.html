@@ -14,13 +14,25 @@
 			<div class="span12 lead" style="padding: 10px; border-radius:5px; background-color:gray">
 				<font color="gold"><center><b>Welcome to our HTTP Chatroom ! </b></center></font>
 			</div>
-			<div class="span12" style="padding: 10px; margin-top: 15px; background-color:gray; border-radius:5px; height: 250px">
-				<font color="white"><center>
-				<span>Please Enter your Chatname:
-					<input type="text" id="userChatName"></input>
-				</span>
-				<div style="margin-top: 30px">
-					<button type="button" class="btn btn-info" style="height: 50px; width: 150px">CHAT !</button>
+			<div class="span12" style="padding: 10px; margin-top: 15px; background-color:gray; border-radius:5px;">
+				<font color="white">
+				<div id="main" style="margin-left: 200px">
+					<div style="float:left">Your Chatname:
+							<input type="text" id="userChatName" readonly="true"></input> 
+							<button type="button" onclick="document.getElementById('userChatName').readOnly = false;">Change Name</button>
+					</div>
+					<div style="float:left">
+						Current Chatroom Content<br/>
+						<textarea class="textarea" id="textarea" readonly="readonly" rows="15" cols="90" style="overflow:auto; width:500px"></textarea>
+					</div>
+				    <div style="float:left">
+						Send Content<br/>
+						<textarea class="textarea" id="textarea" rows="2" cols="90" style="overflow:auto; width:500px"></textarea>
+						<div>
+							<button type="button" class="btn btn-info" style="height: 35px; width: 150px" id="submitContent">Submit</button>
+							<button type="button" class="btn btn-warning" style="height: 35px; width: 150px" id="resetContent">Clear</button>
+						</div>
+					</div>
 				</div>
 				</select></font>
 			</div>
@@ -29,8 +41,6 @@
 	
 	
 	<script src="./js/jquery.js"></script>
-	<script src="./js/less-1.3.3.min.js"></script>
 	<script src="./js/bootstrap.js"></script>
-    <script src="./js/bootstrap-min.js"></script>
   </body>
 </html>
