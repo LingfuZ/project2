@@ -26,6 +26,8 @@
 
     	function sendRequest() {
 
+    		socket.emit('from client', { message: message });
+
     		var messagebox = document.getElementById("messagebox");
     		var message = document.getElementById("messageinput").value;
     		var chatname = document.getElementById("userChatName").value;
