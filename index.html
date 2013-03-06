@@ -5,9 +5,42 @@
     <title>IT 355 - Chatroom - Thang and Larry</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="Thang and Larry">
     <link href="./css/bootstrap.css" rel="stylesheet">
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script type="text/javascript">
+    	var socket = io.connect('/');
+    	socket.on('from server', function (data) {
+    		console.log(data);
+    		if (data.message) {
+    			var messagebox = document.getElementById("messagebox");
+    			messagebox.innerHTML += (data.message);
+    		} else {
+    			console.log("Warn: get no message from server");
+    		}
+    	});
+
+    	// var sendButton = document.getElementById("submitContent");
+    	// sendButton.addEventListener("click", sendRequest, false);
+
+    	function sendRequest() {
+
+    		var messagebox = document.getElementById("messagebox");
+    		var message = document.getElementById("messageinput").value;
+    		var chatname = document.getElementById("userChatName").value;
+    		var select = document.getElementById("selectroom");
+    		var roomnumber = select.options[select.selectedIndex].value;
+
+    		// display the user's input message
+    		messagebox.innerHTML += message + "\n"
+    		//send the special chat request
+    		var address = socket.handshake.address;
+    		console.log("~~~~~~~~~~~~The server address" + address);
+    		// window.location = ;
+
+    	}
+
 		function gup(varname) {
 			varname = varname.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
 			var regexS = "[\\?&]"+varname+"=([^&#]*)";
@@ -16,13 +49,9 @@
 			if( results == null ) return ""; else return results[1];
 		}
 		
-		function loadChat(){
-			var chatName = gup('chatName');
-			document.getElementById('userChatName').value = chatName;
-		}
     </script>
   </head>
-  <body onload="loadChat();">
+  <body>
 	<div class="container" style="margin-top: 20px;">
 		<div class="row">
 			<div class="span12 lead" style="padding: 10px; border-radius:5px; background-color:gray">
@@ -32,7 +61,7 @@
 				<font color="white">
 				<div id="main" style="margin-left: 200px">
 					<div float:left>Select Chatroom:
-						<select>
+						<select id="selectroom">
 						  <option value="1">Chatroom 1 (Default)</option>
 						  <option value="2">Chatroom 2</option>
 						  <option value="3">Chatroom 3 (VIP)</option>
@@ -44,13 +73,13 @@
 					</div>
 					<div style="float:left">
 						Current Chatroom Content<br/>
-						<textarea class="textarea" id="textarea" readonly="readonly" rows="15" cols="90" style="overflow:auto; width:500px"></textarea>
+						<textarea class="textarea" id="messagebox" readonly="readonly" rows="15" cols="90" style="overflow:auto; width:500px"></textarea>
 					</div>
 				    <div style="float:left">
 						Send Content<br/>
-						<textarea class="textarea" id="textarea" rows="2" cols="90" style="overflow:auto; width:500px"></textarea>
+						<textarea class="textarea" id="messageinput" rows="2" cols="90" style="overflow:auto; width:500px"></textarea>
 						<div>
-							<button type="button" class="btn btn-info" style="height: 35px; width: 150px" id="submitContent">Submit</button>
+							<button type="button" class="btn btn-info" style="height: 35px; width: 150px" id="submitContent" onclick="sendRequest();">Submit</button>
 							<button type="button" class="btn btn-warning" style="height: 35px; width: 150px" id="resetContent">Clear</button>
 						</div>
 					</div>
@@ -59,7 +88,6 @@
 			</div>
 		</div>	
 	</div>
-	
 	
 	<script src="./js/jquery.js"></script>
 	<script src="./js/bootstrap.js"></script>
