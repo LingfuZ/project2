@@ -14,7 +14,7 @@
 		var fullMessage = null;
     	socket.on('from server', function (data) {
     		console.log(data);
-    		if (data['fullMessage'].length > 0) {
+    		if (data['connect']) {
 				fullMessage = data['fullMessage'];
 				document.getElementById("messagebox").innerHTML = "Welcome to Larry and Thang's Chat Room!\n";
 				for(var i = 0; i < fullMessage.length; i++){
@@ -28,13 +28,22 @@
     			console.log("Warn: get no message from server");
     		}
     	});
-
+		
+		function changeRoom(){
+			var select = document.getElementById("selectroom");
+    		var chatRoom = "room" + select.options[select.selectedIndex].value;
+			var chatname = document.getElementById("userChatName").value;
+			//var message = "User " + chatname " just entered chatRoom " + chatRoom;
+			socket.emit('from client', { message: "", chatName : chatname, chatRoom:  chatRoom});
+			
+		}
+		
     	function sendRequest() {
     		var message = document.getElementById("messageinput").value;
     		var chatname = document.getElementById("userChatName").value;
     		var select = document.getElementById("selectroom");
-    		var roomnumber = select.options[select.selectedIndex].value;
-			socket.emit('from client', { message: message, chatName : chatname });
+    		var chatRoom = "room" + select.options[select.selectedIndex].value;
+			socket.emit('from client', { message: message, chatName : chatname, chatRoom:  chatRoom});
 
     		// display the user's input message
 			//for(var i = 0; i < fullMessage.length; i++){
@@ -65,7 +74,7 @@
 				<font color="white">
 				<div id="main" style="margin-left: 200px">
 					<div float:left>Select Chatroom:
-						<select id="selectroom">
+						<select id="selectroom" onchange="changeRoom();">
 						  <option value="1">Chatroom 1 (Default)</option>
 						  <option value="2">Chatroom 2</option>
 						  <option value="3">Chatroom 3 (VIP)</option>

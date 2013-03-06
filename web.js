@@ -48,20 +48,22 @@ app.get("*", function(req, res){
 
 io.sockets.on("connection", function (socket) {
 	chatBuffer['room1']['online'] = Object.keys(socket.manager.open).length;
+	
 	socket.on("from client", function (data) {
+		var chatRoom = data.chatRoom;
 		if(data.message){
 			chatName = (data.chatName == "" ? "Anonymous" : data.chatName);
-			chatBuffer['room1']['fullMessage'].push("<" + chatName + "> : " + data.message + '\n');
+			chatBuffer[chatRoom]['fullMessage'].push("<" + chatName + "> : " + data.message + '\n');
 		}
 		console.log("received: ", data, " from ", socket.store.id);
 		var connection_limit = 20;
 		if(Object.keys(socket.manager.open).length <= connection_limit){
 			if(chatBuffer['room1']['fullMessage'].length > 0){
-				sendAll({fullMessage: chatBuffer['room1']['fullMessage'], online: chatBuffer['room1']['online'] })
+				sendAll({fullMessage: chatBuffer[chatRoom]['fullMessage'], online: chatBuffer['room1']['online'], connect:true })
 			}
 		}
 		else{
-			socket.emit('from server', { fullMessage: [], online: chatBuffer['room1']['online'] });
+			socket.emit('from server', { fullMessage: [], online: chatBuffer['room1']['online'], connect:false });
 			socket.disconnect();
 		}	
 	});
