@@ -20,30 +20,44 @@
 				for(var i = 0; i < fullMessage.length; i++){
 					document.getElementById("messagebox").innerHTML += fullMessage[i];
 				}
-    		} else {
-				document.getElementById("messagebox").innerHTML = "******************************************************************\n";
-				document.getElementById("messagebox").innerHTML += "Sorry, this Chatroom is limited to " + data.online + " connections\n";
-				document.getElementById("messagebox").innerHTML += "There are currently " + data.online + " users online!\n";
-				document.getElementById("messagebox").innerHTML += "Connection Terminated !\n";
-    			console.log("Warn: get no message from server");
-    		}
+    		} 
+    // 		else {
+				// document.getElementById("messagebox").innerHTML = "******************************************************************\n";
+				// document.getElementById("messagebox").innerHTML += "Sorry, this Chatroom is limited to " + data.online + " connections\n";
+				// document.getElementById("messagebox").innerHTML += "There are currently " + data.online + " users online!\n";
+				// document.getElementById("messagebox").innerHTML += "Connection Terminated !\n";
+    // 			console.log("Warn: get no message from server");
+    // 		}
     	});
+
+  //   	function connectToServer() {
+  //   		console.log("onload: connectToServer called");
+		// var message = document.getElementById("messageinput").value;
+  //   	var chatName = document.getElementById("userChatName").value;
+  //   	var select = document.getElementById("selectroom");
+  //   	var chatRoom = "room" + select.options[select.selectedIndex].value;
+
+  //   		socket.emit('on connected', {message: "", chatName : chatName, chatRoom: chatRoom});
+  //   	}
 		
-		function changeRoom(){
-			var select = document.getElementById("selectroom");
-    		var chatRoom = "room" + select.options[select.selectedIndex].value;
-			var chatname = document.getElementById("userChatName").value;
+		function changeRoom() {
+		var message = document.getElementById("messageinput").value;
+    	var chatName = document.getElementById("userChatName").value;
+    	var select = document.getElementById("selectroom");
+    	var chatRoom = "room" + select.options[select.selectedIndex].value;
+
 			//var message = "User " + chatname " just entered chatRoom " + chatRoom;
-			socket.emit('from client', { message: "", chatName : chatname, chatRoom:  chatRoom});
-			
+			socket.emit('from client', { message: "", chatName : chatName, chatRoom:  chatRoom});
 		}
 		
     	function sendRequest() {
-    		var message = document.getElementById("messageinput").value;
-    		var chatname = document.getElementById("userChatName").value;
-    		var select = document.getElementById("selectroom");
-    		var chatRoom = "room" + select.options[select.selectedIndex].value;
-			socket.emit('from client', { message: message, chatName : chatname, chatRoom:  chatRoom});
+		var message = document.getElementById("messageinput").value;
+    	var chatName = document.getElementById("userChatName").value;
+    	var select = document.getElementById("selectroom");
+    	var chatRoom = "room" + select.options[select.selectedIndex].value;
+
+    		
+			socket.emit('from client', { message: message, chatName : chatName, chatRoom:  chatRoom});
 
     		// display the user's input message
 			//for(var i = 0; i < fullMessage.length; i++){
@@ -64,7 +78,7 @@
 		
     </script>
   </head>
-  <body>
+  <body onload="changeRoom()">
 	<div class="container" style="margin-top: 20px;">
 		<div class="row">
 			<div class="span12 lead" style="padding: 10px; border-radius:5px; background-color:gray">
