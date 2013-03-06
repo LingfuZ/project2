@@ -17,13 +17,13 @@ var io = require("socket.io").listen(server);
 
 io.configure(function () { 
     io.set("transports", ["xhr-polling"]); 
-    io.set("polling duration", 60); 
+    io.set("polling duration", 30); 
 });
 
 
 var chatName = null;
 var chatLine = null;
-var chatBuffer = {room1: {fullMessage:[]}, room2: {fullMessage:[]}, room3: {fullMessage:[]}};
+var chatBuffer = {room1: {fullMessage:[], online:0}, room2: {fullMessage:[], online:0}, room3: {fullMessage:[], online:0}};
 
 app.get("*", function(req, res){
 	switch(true){
@@ -31,35 +31,12 @@ app.get("*", function(req, res){
 			res.sendfile(__dirname + "/index.html");
 			chatName = req.url.match(/chat\?name=(.+)\&line=(.+)/i)[1];
 			chatLine = req.url.match(/chat\?name=(.+)\&line=(.+)/i)[2];
-			var message = chatName + " : " + chatLine + "\n";
+			var message = "<" + chatName + "> : " + chatLine + "\n";
 			chatBuffer['room1']['fullMessage'].push(message);
 			console.log(message)
 			break;
 		case(req.url=="/"):
-			res.sendfile(__dirname + "/index.html");
-			io.sockets.on("connection", function (socket) {
-				socket.emit("from server", { message: "Welcome to Larry and Thang's Chat Room!\n" });
-				sendAll({online: Object.keys(socket.manager.open).length});
-				
-				socket.on("from client", function (data) {
-					if(data.message){
-						chatBuffer['room1']['fullMessage'].push(data);
-					}
-					console.log("received: ", data, " from ", socket.store.id);
-					for(var line in chatBuffer['room1']['fullMessage']){
-						socket.emit("from server", { message: line });
-					}
-					//if (data.message){
-						//sendAll(data, socket.id);
-					//}	
-				});
-				
-				socket.on("disconnect", function(reason) {
-					sendAll({online: Object.keys(socket.manager.open).length});
-				});
-			});	
-			
-			
+			res.sendfile(__dirname + "/index.html");			
 			break;
 		default:
 			console.log("The Client requested this: " + req.url)
@@ -69,33 +46,36 @@ app.get("*", function(req, res){
 	}
 })
 
+io.sockets.on("connection", function (socket) {
+	chatBuffer['room1']['online'] = Object.keys(socket.manager.open).length;
+	socket.on("from client", function (data) {
+		if(data.message){
+			chatName = (data.chatName == "" ? "Anonymous" : data.chatName);
+			chatBuffer['room1']['fullMessage'].push("<" + chatName + "> : " + data.message + '\n');
+		}
+		console.log("received: ", data, " from ", socket.store.id);
+		var connection_limit = 20;
+		if(Object.keys(socket.manager.open).length <= connection_limit){
+			if(chatBuffer['room1']['fullMessage'].length > 0){
+				sendAll({fullMessage: chatBuffer['room1']['fullMessage'], online: chatBuffer['room1']['online'] })
+			}
+		}
+		else{
+			socket.emit('from server', { fullMessage: [], online: chatBuffer['room1']['online'] });
+			socket.disconnect();
+		}	
+	});
+	
+	socket.on("disconnect", function(reason) {
+		sendAll({online: Object.keys(socket.manager.open).length});
+	});
+});
+
+
 app.configure(function() {
 	app.use(express.static(__dirname + '/'));
 });
 
-/**
-io.sockets.on("connection", function (socket) {
-    socket.emit("from server", { message: "Welcome to Larry and Thang's Chat Room!\n" });
-    sendAll({online: Object.keys(socket.manager.open).length});
-	
-    socket.on("from client", function (data) {
-		if(data.message){
-			chatBuffer['room1']['fullMessage'].push(data);
-		}
-		console.log("received: ", data, " from ", socket.store.id);
-		for(var line in chatBuffer['room1']['fullMessage']){
-			socket.emit("from server", { message: line });
-		}
-		//if (data.message){
-			//sendAll(data, socket.id);
-		//}	
-    });
-    
-    socket.on("disconnect", function(reason) {
-        sendAll({online: Object.keys(socket.manager.open).length});
-    });
-});
-**/
 
 function sendAll(message, user) {
     for (var socket in io.sockets.sockets) {

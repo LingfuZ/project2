@@ -11,34 +11,36 @@
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script type="text/javascript">
     	var socket = io.connect('/');
+		var fullMessage = null;
     	socket.on('from server', function (data) {
     		console.log(data);
-    		if (data.message) {
-    			var messagebox = document.getElementById("messagebox");
-    			messagebox.innerHTML += (data.message);
+    		if (data['fullMessage'].length > 0) {
+				fullMessage = data['fullMessage'];
+				document.getElementById("messagebox").innerHTML = "Welcome to Larry and Thang's Chat Room!\n";
+				for(var i = 0; i < fullMessage.length; i++){
+					document.getElementById("messagebox").innerHTML += fullMessage[i];
+				}
     		} else {
+				document.getElementById("messagebox").innerHTML = "******************************************************************\n";
+				document.getElementById("messagebox").innerHTML += "Sorry, this Chatroom is limited to " + data.online + " connections\n";
+				document.getElementById("messagebox").innerHTML += "There are currently " + data.online + " users online!\n";
+				document.getElementById("messagebox").innerHTML += "Connection Terminated !\n";
     			console.log("Warn: get no message from server");
     		}
     	});
 
-    	// var sendButton = document.getElementById("submitContent");
-    	// sendButton.addEventListener("click", sendRequest, false);
-
     	function sendRequest() {
-
-    		socket.emit('from client', { message: message });
-
-    		var messagebox = document.getElementById("messagebox");
     		var message = document.getElementById("messageinput").value;
     		var chatname = document.getElementById("userChatName").value;
     		var select = document.getElementById("selectroom");
     		var roomnumber = select.options[select.selectedIndex].value;
+			socket.emit('from client', { message: message, chatName : chatname });
 
     		// display the user's input message
-    		messagebox.innerHTML += message + "\n"
+			//for(var i = 0; i < fullMessage.length; i++){
+			//		document.getElementById("messagebox").innerHTML += fullMessage[i];
+			//}
     		//send the special chat request
-    		var address = socket.handshake.address;
-    		console.log("~~~~~~~~~~~~The server address" + address);
     		// window.location = ;
 
     	}
@@ -70,8 +72,7 @@
 						</select>
 					</div>
 					<div style="float:left">Your Chatname:
-							<input type="text" id="userChatName" readonly="true"></input> 
-							<button type="button" class="btn btn-info" onclick="document.getElementById('userChatName').readOnly = false;">Change Name</button>
+							<input type="text" id="userChatName"></input> 
 					</div>
 					<div style="float:left">
 						Current Chatroom Content<br/>
