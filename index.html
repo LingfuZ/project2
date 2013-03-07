@@ -1,3 +1,10 @@
+<!--
+/*********************************
+// Name: Thang Nguyen and Larry Zhang
+// IT 347
+// HTTP Chat Client
+*********************************/
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -9,31 +16,16 @@
     <link href="./css/bootstrap.css" rel="stylesheet">
 	<script src="/socket.io/socket.io.js"></script>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-	<script src="/js/delivery.js"></script>
-    <script type="text/javascript">
-
-    
+    <script type="text/javascript">    
 	var socket = io.connect('/');
-	var fullMessage = null;
-
+	var fullMessage = null;	
+	//These will run when the HTML DOM Elements finish rendering
     $(document).ready(function() {
-
-		socket.on('connect', function(){
-			var delivery = new Delivery(socket);
-
-		    delivery.on('receive.start',function(fileUID){
-		      console.log('receiving a file!');
-		    });
-
-		    delivery.on('receive.success',function(file){
-		    	console.log("The received file url is : " + file.dataURL);
-		      	window.location = file.dataURL();
-		    });
-		});
-
     	socket.on('from server', function (data) {
     		console.log(data);
-    		if (data['connect']) {
+			var select = document.getElementById("selectroom");
+			var chatRoom = "room" + select.options[select.selectedIndex].value;
+    		if (data['fullMessage'] && data['chatRoom'] == chatRoom) {
 				fullMessage = data['fullMessage'];
 				document.getElementById("messagebox").innerHTML = "Welcome to Larry and Thang's Chat Room!\n";
 				for(var i = 0; i < fullMessage.length; i++){
@@ -41,38 +33,49 @@
 				}
     		}
     	});
-
-    	socket.on('reject', function () {
+		
+		//When the server sends a reject message
+    	socket.on('reject', function (data) {
     		console.log("The client should be kicked out");
-    		document.getElementById("messagebox").innerHTML = "Sorry the chat room is currently full!\n"
+    		document.getElementById("messagebox").innerHTML = "***************************************\nThe Room is Full. Try Again in a Bit.\n***************************************\n"
     		socket.disconnect();
     	});
-
-    	changeRoom();
-
     });
-
-
-	function changeRoom() {
-		var message = document.getElementById("messageinput").value;
-    	var chatName = document.getElementById("userChatName").value;
-    	var select = document.getElementById("selectroom");
-    	var chatRoom = "room" + select.options[select.selectedIndex].value;
-
-			//var message = "User " + chatname " just entered chatRoom " + chatRoom;
+	
+	//Check for Enter key in the text input. No need to click Submit everytime
+	function checkKey(){
+        if (window.event.keyCode == 13){
+            sendRequest();
+        }
+    }
+	
+	//This method sends a blank message to the server to let it know that the client changes room
+	function changeRoom(){
+			var message = document.getElementById("messageinput").value;
+			var chatName = document.getElementById("userChatName").value;
+			var select = document.getElementById("selectroom");
+			var chatRoom = "room" + select.options[select.selectedIndex].value;
 			socket.emit('from client', { message: "", chatName : chatName, chatRoom:  chatRoom});
 		}
-		
-	function sendRequest() {
+	
+	//This method sends the request message to the server with the chatRoom number
+	function sendRequest(){
 		var message = document.getElementById("messageinput").value;
 		var chatName = document.getElementById("userChatName").value;
 		var select = document.getElementById("selectroom");
 		var chatRoom = "room" + select.options[select.selectedIndex].value;
-		
 		socket.emit('from client', { message: message, chatName : chatName, chatRoom:  chatRoom});
-
+		//Clear the text input and scroll down to the bottom of the text area
+		document.getElementById("messageinput").value = "";
+		var obj = document.getElementById('messagebox');
+		obj.scrollTop = obj.scrollHeight - obj.clientHeight;
 	}
-
+	
+	//Clear the chat input
+	function clearChat(){
+		document.getElementById("messageinput").value = "";
+	}
+			
     </script>
   </head>
   <body>
@@ -100,10 +103,10 @@
 					</div>
 				    <div style="float:left">
 						Send Content<br/>
-						<textarea class="textarea" id="messageinput" rows="2" cols="90" style="overflow:auto; width:500px"></textarea>
+						<input type="text" id="messageinput" rows="2" cols="90" style="overflow:auto; width:500px" onkeypress="checkKey();"></input>
 						<div>
 							<button type="button" class="btn btn-info" style="height: 35px; width: 150px" id="submitContent" onclick="sendRequest();">Submit</button>
-							<button type="button" class="btn btn-warning" style="height: 35px; width: 150px" id="resetContent">Clear</button>
+							<button type="button" class="btn btn-warning" style="height: 35px; width: 150px" id="resetContent" onclick="clearChat();">Clear</button>
 						</div>
 					</div>
 				</div>
