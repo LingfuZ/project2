@@ -48,6 +48,8 @@
     		socket.disconnect();
     	});
 
+    	changeRoom();
+
     });
 
 
@@ -66,7 +68,6 @@
 		var chatName = document.getElementById("userChatName").value;
 		var select = document.getElementById("selectroom");
 		var chatRoom = "room" + select.options[select.selectedIndex].value;
-
 		
 		socket.emit('from client', { message: message, chatName : chatName, chatRoom:  chatRoom});
 
@@ -74,7 +75,7 @@
 
     </script>
   </head>
-  <body onload="changeRoom()">
+  <body>
 	<div class="container" style="margin-top: 20px;">
 		<div class="row">
 			<div class="span12 lead" style="padding: 10px; border-radius:5px; background-color:gray">
