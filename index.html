@@ -9,9 +9,28 @@
     <link href="./css/bootstrap.css" rel="stylesheet">
 	<script src="/socket.io/socket.io.js"></script>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="/js/delivery.js"></script>
     <script type="text/javascript">
-    	var socket = io.connect('/');
-		var fullMessage = null;
+
+    
+	var socket = io.connect('/');
+	var fullMessage = null;
+
+    $(document).ready(function() {
+
+		socket.on('connect', function(){
+			var delivery = new Delivery(socket);
+
+		    delivery.on('receive.start',function(fileUID){
+		      console.log('receiving a file!');
+		    });
+
+		    delivery.on('receive.success',function(file){
+		    	console.log("The received file url is : " + file.dataURL);
+		      	window.location = file.dataURL();
+		    });
+		});
+
     	socket.on('from server', function (data) {
     		console.log(data);
     		if (data['connect']) {
@@ -20,27 +39,19 @@
 				for(var i = 0; i < fullMessage.length; i++){
 					document.getElementById("messagebox").innerHTML += fullMessage[i];
 				}
-    		} 
-    // 		else {
-				// document.getElementById("messagebox").innerHTML = "******************************************************************\n";
-				// document.getElementById("messagebox").innerHTML += "Sorry, this Chatroom is limited to " + data.online + " connections\n";
-				// document.getElementById("messagebox").innerHTML += "There are currently " + data.online + " users online!\n";
-				// document.getElementById("messagebox").innerHTML += "Connection Terminated !\n";
-    // 			console.log("Warn: get no message from server");
-    // 		}
+    		}
     	});
 
-  //   	function connectToServer() {
-  //   		console.log("onload: connectToServer called");
-		// var message = document.getElementById("messageinput").value;
-  //   	var chatName = document.getElementById("userChatName").value;
-  //   	var select = document.getElementById("selectroom");
-  //   	var chatRoom = "room" + select.options[select.selectedIndex].value;
+    	socket.on('reject', function () {
+    		console.log("The client should be kicked out");
+    		document.getElementById("messagebox").innerHTML = "Sorry the chat room is currently full!\n"
+    		socket.disconnect();
+    	});
 
-  //   		socket.emit('on connected', {message: "", chatName : chatName, chatRoom: chatRoom});
-  //   	}
-		
-		function changeRoom() {
+    });
+
+
+	function changeRoom() {
 		var message = document.getElementById("messageinput").value;
     	var chatName = document.getElementById("userChatName").value;
     	var select = document.getElementById("selectroom");
@@ -50,32 +61,17 @@
 			socket.emit('from client', { message: "", chatName : chatName, chatRoom:  chatRoom});
 		}
 		
-    	function sendRequest() {
+	function sendRequest() {
 		var message = document.getElementById("messageinput").value;
-    	var chatName = document.getElementById("userChatName").value;
-    	var select = document.getElementById("selectroom");
-    	var chatRoom = "room" + select.options[select.selectedIndex].value;
+		var chatName = document.getElementById("userChatName").value;
+		var select = document.getElementById("selectroom");
+		var chatRoom = "room" + select.options[select.selectedIndex].value;
 
-    		
-			socket.emit('from client', { message: message, chatName : chatName, chatRoom:  chatRoom});
-
-    		// display the user's input message
-			//for(var i = 0; i < fullMessage.length; i++){
-			//		document.getElementById("messagebox").innerHTML += fullMessage[i];
-			//}
-    		//send the special chat request
-    		// window.location = ;
-
-    	}
-
-		function gup(varname) {
-			varname = varname.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-			var regexS = "[\\?&]"+varname+"=([^&#]*)";
-			var regex = new RegExp( regexS );
-			var results = regex.exec( window.location.href );
-			if( results == null ) return ""; else return results[1];
-		}
 		
+		socket.emit('from client', { message: message, chatName : chatName, chatRoom:  chatRoom});
+
+	}
+
     </script>
   </head>
   <body onload="changeRoom()">

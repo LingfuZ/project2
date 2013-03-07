@@ -1,10 +1,12 @@
 var express = require("express"),
     http = require("http"),
+    dl = require('delivery'),
 	fs = require('fs');
 
 // create a express server
 var app = express();
 var server = http.createServer(app);
+
 // listen on 9020 port
 var port = 9022;
 server.listen(port);
@@ -51,27 +53,14 @@ app.get("*", function(req, res){
 // client connects to server
 io.sockets.on("connection", function (socket) {
 	chatBuffer['room1']['online'] = Object.keys(socket.manager.open).length;
-	
-	// when client first connects to the server
-	// socket.on("on connected", function (data) {
-	// 	if (data.message) {
-	// 		var chatRoom = 1;
-	// 		var chatName = "";
-	// 		if (data.chatRoom)
-	// 			chatRoom = data.chatRoom;
-	// 		if (data.chatName)
-	// 			chatName = (data.chatName == "" ? "Anonymous" : data.chatName);
-	// 		if (chatBuffer['room1']['fullMessage'].length > 0) {
-	// 			console.log("----------------What's in the buffer------------------");
-	// 			console.log(chatBuffer[chatRoom]['fullMessage']);
-	// 			sendAll({fullMessage: chatBuffer[chatRoom]['fullMessage'], 
-	// 				online: chatBuffer['room1']['online'], connect:true }, socket.id);
-	// 		}
-	// 	}
 
-	// 	console.log("connected: ", data, " from ", socket.store.id);
+	// Set the max number of connections
+	var connection_limit = 1;
+	if(Object.keys(socket.manager.open).length > connection_limit){
 
-	// });
+		console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~reach connections limit");
+		socket.emit("reject");
+	}
 
 	socket.on("from client", function (data) {
 		var chatRoom = data.chatRoom;
@@ -80,18 +69,15 @@ io.sockets.on("connection", function (socket) {
 			chatBuffer[chatRoom]['fullMessage'].push("<" + chatName + "> : " + data.message + '\n');
 		}
 		console.log("received: ", data, " from ", socket.store.id);
-		var connection_limit = 20;
+		
 		// !Should be checked outside of this event when connection established and close connection if exceed 20
-		if(Object.keys(socket.manager.open).length <= connection_limit){
+		// if(Object.keys(socket.manager.open).length <= connection_limit){
 			if(chatBuffer['room1']['fullMessage'].length > 0){
 				sendAll({fullMessage: chatBuffer[chatRoom]['fullMessage'], 
 					online: chatBuffer['room1']['online'], connect:true });
 			}
-		}
-		else{
-			socket.emit('from server', { fullMessage: [], online: chatBuffer['room1']['online'], connect:false });
-			socket.disconnect();
-		}	
+		// }
+			
 	});
 	
 	socket.on("disconnect", function(reason) {
@@ -99,11 +85,9 @@ io.sockets.on("connection", function (socket) {
 	});
 });
 
-
 app.configure(function() {
 	app.use(express.static(__dirname + '/'));
 });
-
 
 function sendAll(message, user) {
     for (var socket in io.sockets.sockets) {
